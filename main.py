@@ -8,6 +8,14 @@ from transformers import AutoTokenizer, AutoModel
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import pickle
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+import nltk
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 app = FastAPI()
 
@@ -36,20 +44,10 @@ df = pd.merge(df_metadata, df_transcriptions, on='id')
 df['combined_text'] = df['metadata'] + ' ' + df['Text']
 tokenizer = AutoTokenizer.from_pretrained('distilbert-base-uncased')
 model = AutoModel.from_pretrained('distilbert-base-uncased')
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
 
 def preprocess_text(text):
-    from nltk.tokenize import word_tokenize
-    from nltk.corpus import stopwords
-    from nltk.stem import WordNetLemmatizer
-    import nltk
-
-    nltk.download('punkt')
-    nltk.download('stopwords')
-    nltk.download('wordnet')
-
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
-
     tokens = word_tokenize(text)
     tokens = [word for word in tokens if word.isalnum()]
     tokens = [word.lower() for word in tokens if word.lower() not in stop_words]
